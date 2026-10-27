@@ -1,0 +1,6 @@
+{
+  "name": "Neon Breakout Arcade",
+  "description": "經典街機風格的霓虹打磚塊遊戲，具備豐富道具掉落、多樣關卡、強烈打擊反彈手感與合成音效。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

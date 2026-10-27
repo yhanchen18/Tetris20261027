@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-Hant" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Breakout Arcade - 霓虹街機打磚塊</title>
+    <meta name="description" content="經典街機風格的霓虹打磚塊遊戲，具備豐富道具掉落、多樣關卡、強烈打擊反彈手感與合成音效。" />
+    <meta property="og:title" content="Neon Breakout Arcade - 霓虹街機打磚塊" />
+    <meta property="og:description" content="經典街機風格的霓虹打磚塊遊戲，具備豐富道具掉落、多樣關卡、強烈打擊反彈手感與合成音效。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/index.css">
+    <style>
+      .font-arcade {
+        font-family: 'Orbitron', -apple-system, sans-serif;
+      }
+      .font-body {
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen font-body antialiased selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
+
+    <!-- Top Navigation Bar (Universal Design Top Bar Contract) -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        <!-- Brand Zone -->
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-pink-500 flex items-center justify-center font-arcade font-black text-slate-950 text-base shadow-sm">
+            ⚡
+          </div>
+          <span class="font-arcade text-lg font-bold tracking-wider bg-gradient-to-r from-cyan-400 via-sky-300 to-pink-400 bg-clip-text text-transparent whitespace-nowrap">
+            NEON BREAKOUT
+          </span>
+        </div>
+
+        <!-- Controls Zone -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button id="mute-btn" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span class="text-emerald-400">🔊 音效</span>
+          </button>
+          <button id="btn-pause" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span class="text-amber-400">⏸ 暫停 (P)</span>
+          </button>
+          <button id="btn-help" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span class="text-cyan-400">❓ 說明</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-4 sm:py-6 flex flex-col items-center">
+      
+      <!-- HUD Dashboard Strip -->
+      <div class="w-full max-w-[800px] mb-3 p-3 rounded-xl bg-slate-900/90 border border-slate-800/80 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+        <div class="flex items-center gap-4 sm:gap-6">
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">分數 SCORE</div>
+            <div id="hud-score" class="font-arcade text-lg sm:text-xl font-bold text-cyan-400 tabular-nums">0</div>
+          </div>
+          <div class="h-8 w-px bg-slate-800"></div>
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">最高紀錄 HIGH</div>
+            <div id="hud-highscore" class="font-arcade text-lg sm:text-xl font-bold text-amber-400 tabular-nums">0</div>
+          </div>
+          <div class="h-8 w-px bg-slate-800"></div>
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">關卡 STAGE</div>
+            <div id="hud-level" class="font-arcade text-lg sm:text-xl font-bold text-purple-400">1 / 4</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 sm:gap-6">
+          <div id="hud-combo" class="font-arcade text-xs sm:text-sm font-bold text-pink-400 opacity-0 transition-opacity duration-150 tracking-wider">
+            COMBO x1
+          </div>
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">生命 LIVES</div>
+            <div id="hud-lives" class="text-base sm:text-lg tracking-tight select-none">❤️❤️❤️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Power-ups Bar -->
+      <div id="hud-active-powerups" class="w-full max-w-[800px] min-h-[30px] mb-2 flex flex-wrap items-center gap-2">
+        <!-- Dynamic power-up badges inserted here by JS -->
+      </div>
+
+      <!-- Canvas Playfield with CRT Scanlines & Screen Shake Wrapper -->
+      <div class="relative w-full max-w-[800px] rounded-xl overflow-hidden border border-cyan-500/30 neon-box-cyan bg-slate-950 aspect-[4/3] shadow-2xl">
+        <canvas id="game-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+        <div class="absolute inset-0 scanlines pointer-events-none"></div>
+
+        <!-- Overlay: Start Screen -->
+        <div id="overlay-start" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 text-xs font-medium mb-3">
+            <span>ARCADE EDITION</span>
+            <span>·</span>
+            <span>60 FPS READY</span>
+          </div>
+          <h1 class="font-arcade text-3xl sm:text-5xl font-black tracking-wider text-white neon-glow-cyan mb-2">
+            NEON BREAKOUT
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base max-w-md mb-6 leading-relaxed">
+            滑鼠或鍵盤操控導護板，擊碎所有霓虹能量磚塊！收集掉落的強力道具，連續擊破累積高倍率 COMBO！
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 max-w-md w-full mb-6 text-left text-xs bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-slate-800 rounded font-mono text-cyan-400">滑鼠移動</span>
+              <span class="text-slate-400">移動導護板</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-slate-800 rounded font-mono text-cyan-400">A / D 或 ← →</span>
+              <span class="text-slate-400">鍵盤左右移動</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-slate-800 rounded font-mono text-pink-400">空白鍵 / 點擊</span>
+              <span class="text-slate-400">發球 / 發射雷射</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-slate-800 rounded font-mono text-amber-400">P 鍵</span>
+              <span class="text-slate-400">暫停遊戲</span>
+            </div>
+          </div>
+
+          <button id="btn-start" class="px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-pink-500 text-slate-950 font-arcade font-bold text-base rounded-xl hover:opacity-95 transform active:scale-95 transition-all cursor-pointer shadow-lg shadow-cyan-500/30">
+            開始遊戲 START GAME
+          </button>
+        </div>
+
+        <!-- Overlay: Pause Screen -->
+        <div id="overlay-pause" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <h2 class="font-arcade text-3xl sm:text-4xl font-bold text-amber-400 mb-2">
+            GAME PAUSED
+          </h2>
+          <p class="text-slate-400 text-sm mb-6">遊戲已暫停，隨時可繼續戰鬥</p>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="btn-resume" class="px-6 py-2.5 bg-cyan-500 text-slate-950 font-arcade font-bold text-sm rounded-lg hover:bg-cyan-400 transition-colors cursor-pointer">
+              繼續遊戲 RESUME
+            </button>
+            <button id="btn-restart" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-arcade font-bold text-sm rounded-lg transition-colors cursor-pointer">
+              重新開始 RESTART
+            </button>
+          </div>
+        </div>
+
+        <!-- Overlay: Level Clear Screen -->
+        <div id="overlay-clear" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <div class="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-2xl text-emerald-400 mb-3 animate-bounce">
+            ★
+          </div>
+          <h2 id="clear-level-title" class="font-arcade text-3xl sm:text-4xl font-bold text-emerald-400 mb-2">
+            STAGE CLEARED!
+          </h2>
+          <p class="text-slate-300 text-sm mb-4">精彩突破！本關達成完勝！</p>
+          <div class="bg-slate-900 border border-slate-800 px-6 py-3 rounded-lg mb-6">
+            <div class="text-xs text-slate-400">目前累積總分</div>
+            <div id="clear-score-val" class="font-arcade text-2xl font-bold text-cyan-400 tabular-nums">0</div>
+          </div>
+          <button id="btn-next-level" class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-arcade font-bold text-sm rounded-xl hover:opacity-95 transition-all cursor-pointer shadow-lg shadow-emerald-500/30">
+            進入下一關 NEXT STAGE ➔
+          </button>
+        </div>
+
+        <!-- Overlay: Game Over Screen -->
+        <div id="overlay-gameover" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <h2 class="font-arcade text-3xl sm:text-5xl font-black text-rose-500 neon-glow-pink mb-2">
+            GAME OVER
+          </h2>
+          <p class="text-slate-400 text-sm mb-6">球體掉落耗盡，但你的打擊技術已名留街機！</p>
+          <div class="grid grid-cols-2 gap-4 max-w-xs w-full bg-slate-900 border border-slate-800 p-4 rounded-xl mb-6">
+            <div>
+              <div class="text-xs text-slate-400">最終得分</div>
+              <div id="final-score-val" class="font-arcade text-xl font-bold text-cyan-400 tabular-nums">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-400">最高紀錄</div>
+              <div id="final-high-val" class="font-arcade text-xl font-bold text-amber-400 tabular-nums">0</div>
+            </div>
+          </div>
+          <button id="btn-play-again" class="px-8 py-3.5 bg-gradient-to-r from-rose-500 to-pink-500 text-slate-950 font-arcade font-bold text-sm rounded-xl hover:opacity-95 transition-all cursor-pointer shadow-lg shadow-rose-500/30">
+            重新挑戰 PLAY AGAIN
+          </button>
+        </div>
+
+        <!-- Overlay: Victory Screen (All 4 Levels Cleared) -->
+        <div id="overlay-victory" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <div class="text-4xl mb-2 animate-bounce">🏆</div>
+          <h2 class="font-arcade text-3xl sm:text-5xl font-black text-amber-400 neon-glow-cyan mb-2">
+            CHAMPION VICTORY!
+          </h2>
+          <p class="text-slate-200 text-sm sm:text-base max-w-md mb-4 leading-relaxed">
+            恭喜！你成功擊破了所有關卡，成為無可匹敵的打磚塊街機大師！
+          </p>
+          <div class="bg-slate-900 border border-amber-500/40 px-6 py-3 rounded-lg mb-6">
+            <div class="text-xs text-amber-300">傳奇最高總分</div>
+            <div id="vic-score-val" class="font-arcade text-3xl font-bold text-amber-400 tabular-nums">0</div>
+          </div>
+          <button id="btn-vic-play-again" class="px-8 py-3.5 bg-gradient-to-r from-amber-400 to-cyan-400 text-slate-950 font-arcade font-bold text-sm rounded-xl hover:opacity-95 transition-all cursor-pointer shadow-lg shadow-amber-400/30">
+            再次挑戰 PLAY AGAIN
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick Power-Up & Brick Reference Cards -->
+      <div class="w-full max-w-[800px] mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        
+        <!-- Power-Ups Info -->
+        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+          <div class="font-semibold text-slate-200 mb-2 flex items-center gap-1.5">
+            <span class="text-cyan-400">⚡</span>
+            <span>掉落道具指南 (POWER-UPS)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400 font-bold">⚡ 分身</span>
+              <span>1球分裂為3球</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-cyan-400 font-bold">↔ 加長</span>
+              <span>導護板寬度擴增</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-pink-400 font-bold">💥 雷射</span>
+              <span>空白鍵可射擊破磚</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-orange-400 font-bold">🔥 火球</span>
+              <span>直貫磚塊不反彈</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-purple-400 font-bold">⏳ 減速</span>
+              <span>球速降緩便於控球</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sky-400 font-bold">🛡 防護網</span>
+              <span>底部防墜底網保底1次</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brick Types Info -->
+        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+          <div class="font-semibold text-slate-200 mb-2 flex items-center gap-1.5">
+            <span class="text-pink-400">🧱</span>
+            <span>特殊磚塊指南 (BRICK TYPES)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-2 rounded bg-pink-500 inline-block"></span>
+              <span>普通磚：1擊擊碎</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-2 rounded bg-slate-400 inline-block"></span>
+              <span>加固磚：需2-3次撞擊</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-2 rounded bg-red-600 inline-block"></span>
+              <span>炸彈 TNT：波及引爆周圍</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-2 rounded bg-amber-400 inline-block"></span>
+              <span>晶石：必出高級道具</span>
+            </div>
+            <div class="flex items-center gap-1.5 col-span-2">
+              <span class="w-3 h-2 rounded bg-slate-700 inline-block"></span>
+              <span>黑曜石障礙：無法擊碎，僅能反彈</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Help Modal -->
+    <div id="modal-help" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+          <h3 class="font-arcade text-lg font-bold text-cyan-400">遊戲規則與技巧</h3>
+          <button id="btn-close-help" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+        </div>
+        <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+          <p><strong>1. 切球物理角度：</strong>球擊中導護板中心時會直直向上反彈；擊中左右兩側邊緣時反彈角度會變大（最高可達 60 度），善用邊緣反彈能精確切球擊打角落磚塊！</p>
+          <p><strong>2. 連擊加分：</strong>連續擊破多塊磚塊而球未回到板子上時，會觸發 COMBO 倍率提升，最高可獲得 5 倍額外積分！</p>
+          <p><strong>3. 雷射砲技巧：</strong>獲得雷射道具後，快速按下空白鍵或按下滑鼠左鍵即可連續射擊向上飛行的雙重雷射，在球體反彈的同時掃清障礙！</p>
+          <p><strong>4. 快捷鍵清單：</strong>[A]/[D] 或 [←]/[→] 控制移動，[空白鍵] 發球/射擊，[P] 鍵暫停，[M] 鍵靜音開關。</p>
+        </div>
+        <div class="mt-6 text-center">
+          <button onclick="document.getElementById('modal-help').classList.add('hidden')" class="px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs rounded-lg transition-colors cursor-pointer">
+            瞭解，返回遊戲
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 py-3 text-center text-xs text-slate-500">
+      <span>Neon Breakout Arcade</span>
+      <span class="mx-2">·</span>
+      <span>Pure HTML5 · CSS3 · Vanilla JavaScript</span>
+    </footer>
+
+    <!-- Vanilla JS Application Script -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
